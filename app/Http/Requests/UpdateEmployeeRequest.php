@@ -28,6 +28,19 @@ class UpdateEmployeeRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => "required|email|unique:employees,email,{$id}",
             'department_id' => 'required|exists:departments,id',
+
+            // OPTIONAL CONTACT NUMBERS
+            'contact_numbers' => 'nullable|array',
+            'contact_numbers.*.number' => 'required_with:contact_numbers|string',
+            'contact_numbers.*.type' => 'nullable|string',
+
+            // OPTIONAL ADDRESSES
+            'addresses' => 'nullable|array',
+            'addresses.*.address_line' => 'required_with:addresses|string',
+            'addresses.*.city' => 'required_with:addresses|string',
+            'addresses.*.state' => 'required_with:addresses|string',
+            'addresses.*.country' => 'required_with:addresses|string',
+            'addresses.*.pincode' => 'required_with:addresses|string',
         ];
     }
 }

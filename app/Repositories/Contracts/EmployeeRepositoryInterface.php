@@ -9,5 +9,5 @@ interface EmployeeRepositoryInterface
     public function create(array $data);
     public function update($id, array $data);
     public function delete($id);
-    public function search(array $data);
+    public function search(?string $term = null, int $perPage = 10);
 }

@@ -42,13 +42,30 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return $emp->delete();
     }
 
-    public function search(array $dataPass)
+     public function search(?string $term = null, int $perPage = 10)
     {
-        $query = $dataPass['query'] ?? [];
-        dd($query);
-        return $this->model->with('department')
-            ->where('name', 'LIKE', "%{$query}%")
-            ->orWhere('email', 'LIKE', "%{$query}%")
-            ->get();
+        $query = $this->model->with(['department', 'contactNumbers', 'addresses']);
+
+        if ($term) {
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'LIKE', "%{$term}%")
+                  ->orWhere('email', 'LIKE', "%{$term}%")
+                  ->orWhereHas('department', function ($d) use ($term) {
+                      $d->where('name', 'LIKE', "%{$term}%");
+                  })
+                  ->orWhereHas('contactNumbers', function ($c) use ($term) {
+                      $c->where('number', 'LIKE', "%{$term}%");
+                  })
+                  ->orWhereHas('addresses', function ($a) use ($term) {
+                      $a->where('address_line', 'LIKE', "%{$term}%")
+                        ->orWhere('city', 'LIKE', "%{$term}%")
+                        ->orWhere('state', 'LIKE', "%{$term}%")
+                        ->orWhere('country', 'LIKE', "%{$term}%")
+                        ->orWhere('pincode', 'LIKE', "%{$term}%");
+                  });
+            });
+        }
+
+        return $query->paginate($perPage);
     }
 }

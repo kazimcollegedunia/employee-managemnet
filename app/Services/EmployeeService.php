@@ -60,15 +60,17 @@ class EmployeeService
             $employee = $this->repo->find($id);
             $employee->contactNumbers()->delete();
             $employee->addresses()->delete();
-
-            foreach ($payload['contact_numbers'] as $c) {
-                $c['employee_id'] = $id;
-                ContactNumber::create($c);
+            if(isset($payload['contact_numbers']) && is_array($payload['contact_numbers'])) {
+                foreach ($payload['contact_numbers'] as $c) {
+                    $c['employee_id'] = $id;
+                    ContactNumber::create($c);
+                }
             }
-
-            foreach ($payload['addresses'] as $a) {
-                $a['employee_id'] = $id;
-                Address::create($a);
+            if(isset($payload['addresses']) && is_array($payload['addresses'])) {
+                foreach ($payload['addresses'] as $a) {
+                    $a['employee_id'] = $id;
+                    Address::create($a);
+                }
             }
 
             return $this->repo->find($id);
@@ -82,24 +84,9 @@ class EmployeeService
         });
     }
 
-    public function search($term = null, $perPage = 10)
+    public function search(?string $term = null, int $perPage = 10)
     {
-        $query = Employee::with(['department', 'contactNumbers', 'addresses']);
-
-        if ($term) {
-            $query->where(function ($q) use ($term) {
-                $q->where('name', 'LIKE', "%{$term}%")
-                    ->orWhere('email', 'LIKE', "%{$term}%")
-                    ->orWhereHas('department', function ($d) use ($term) {
-                        $d->where('name', 'LIKE', "%{$term}%");
-                    })
-                    ->orWhereHas('contactNumbers', function ($d) use ($term) {
-                        $d->where('number', 'LIKE', "%{$term}%");
-                    });
-            });
-        }
-
-        return $query->paginate($perPage);
+        return $this->repo->search($term, $perPage);
     }
 
 }
