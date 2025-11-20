@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreDepartmentRequest;
+use App\Http\Requests\UpdateDepartmentRequest;
 
 class DepartmentController extends Controller
 {
@@ -70,7 +71,7 @@ class DepartmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+   public function update(UpdateDepartmentRequest $request, int $id)
     {
         $department = Department::find($id);
 
@@ -81,14 +82,8 @@ class DepartmentController extends Controller
             ], 404);
         }
 
-        // Validation
-        $validated = $request->validate([
-            'name' => 'required|max:255|unique:departments,name,' . $id,
-            'description' => 'nullable|string',
-        ]);
-
         try {
-            $department->update($validated);
+            $department->update($request->validated());
 
             return response()->json([
                 'status' => true,
